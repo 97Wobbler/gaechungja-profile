@@ -9,14 +9,31 @@ class CharacterGenerator {
         this.ctx.webkitImageSmoothingEnabled = false;
         this.ctx.msImageSmoothingEnabled = false;
         
+        // 효과음 로딩 (사용자가 파일만 넣으면 동작)
+        this.sfx = {
+            generate: new Audio('assets/audio/soundeffect.mp3'),
+        };
+        Object.values(this.sfx).forEach(a => { a.preload = 'auto'; a.volume = 0.5; });
+        
+        // 파츠별 가중치 설정 (인덱스 순서대로). 기본값은 1
+        // 필요 시 숫자를 조정하세요. 예: 더 자주 나오게 하려면 큰 수
+        this.weights = {
+            skin: Array(9).fill(1),   // 9개
+            face: Array(9).fill(1),   // 9개
+            face2: Array(7).fill(1),  // 7개
+            hair: Array(25).fill(1),  // 25개
+        };
+
         this.images = {
             skin: [],
             face: [],
+            face2: [],
             hair: []
         };
         this.currentCharacter = {
             skin: 0,
             face: 0,
+            face2: 0,
             hair: 0
         };
         
@@ -24,32 +41,69 @@ class CharacterGenerator {
     }
     
     async init() {
+        await this.loadResourcesFromJson();
         await this.loadImages();
         this.setupEventListeners();
         this.generateCharacter();
     }
+
+    async loadResourcesFromJson() {
+        try {
+            const res = await fetch('assets/data/resources.json', { cache: 'no-cache' });
+            const json = await res.json();
+            const parts = json?.parts || {};
+            // weights를 JSON 기반으로 재설정 (존재 시에만)
+            const toWeights = (arr) => Array.isArray(arr) ? arr.map(x => Number(x?.possibility ?? 1) || 0) : [];
+            if (parts.skin) this.weights.skin = toWeights(parts.skin);
+            if (parts.face) this.weights.face = toWeights(parts.face);
+            if (parts.face2) this.weights.face2 = toWeights(parts.face2);
+            if (parts.hair) this.weights.hair = toWeights(parts.hair);
+            // 파일 키 목록 저장 (필요 시 경로 커스터마이즈 가능)
+            this.keys = {
+                skin: (parts.skin || []).map(x => x.key),
+                face: (parts.face || []).map(x => x.key),
+                face2: (parts.face2 || []).map(x => x.key),
+                hair: (parts.hair || []).map(x => x.key),
+            };
+        } catch (_) {
+            // 실패 시 기본 weights/keys 유지
+            this.keys = this.keys || {};
+        }
+    }
     
     async loadImages() {
-        // 스킨 이미지 로드
-        for (let i = 0; i < 1; i++) {
+        // 스킨 이미지 로드 (JSON 키 우선, 없으면 개수 기반)
+        const skinKeys = this.keys?.skin?.length ? this.keys.skin : Array.from({ length: 9 }, (_, i) => String(i).padStart(3, '0'));
+        for (const skinKey of skinKeys) {
             const img = new Image();
-            img.src = `src/skin/${String(i).padStart(3, '0')}.png`;
+            img.src = `src/skin/${skinKey}.png`;
             await this.loadImage(img);
             this.images.skin.push(img);
         }
         
         // 얼굴 이미지 로드
-        for (let i = 0; i < 4; i++) {
+        const faceKeys = this.keys?.face?.length ? this.keys.face : Array.from({ length: 9 }, (_, i) => String(i).padStart(3, '0'));
+        for (const faceKey of faceKeys) {
             const img = new Image();
-            img.src = `src/face/${String(i).padStart(3, '0')}.png`;
+            img.src = `src/face/${faceKey}.png`;
             await this.loadImage(img);
             this.images.face.push(img);
         }
+
+        // 얼굴2 이미지 로드
+        const face2Keys = this.keys?.face2?.length ? this.keys.face2 : Array.from({ length: 7 }, (_, i) => String(i).padStart(3, '0'));
+        for (const face2Key of face2Keys) {
+            const img = new Image();
+            img.src = `src/face2/${face2Key}.png`;
+            await this.loadImage(img);
+            this.images.face2.push(img);
+        }
         
         // 머리카락 이미지 로드
-        for (let i = 0; i < 11; i++) {
+        const hairKeys = this.keys?.hair?.length ? this.keys.hair : Array.from({ length: 25 }, (_, i) => String(i).padStart(3, '0'));
+        for (const hairKey of hairKeys) {
             const img = new Image();
-            img.src = `src/hair/${String(i).padStart(3, '0')}.png`;
+            img.src = `src/hair/${hairKey}.png`;
             await this.loadImage(img);
             this.images.hair.push(img);
         }
@@ -65,19 +119,52 @@ class CharacterGenerator {
     setupEventListeners() {
         document.getElementById('generateBtn').addEventListener('click', () => {
             this.generateCharacter();
+            this.playSfx('generate');
         });
         
         document.getElementById('downloadBtn').addEventListener('click', () => {
             this.downloadCharacter();
         });
     }
+
+    playSfx(name) {
+        const audio = this.sfx?.[name];
+        if (!audio) return;
+        try {
+            audio.currentTime = 0;
+            audio.play();
+        } catch (_) {}
+    }
     
+    // 가중치 배열에서 인덱스를 하나 선택
+    weightedPickIndex(weightArray) {
+        const total = weightArray.reduce((sum, w) => sum + (Number.isFinite(w) ? Math.max(0, w) : 0), 0);
+        if (total <= 0) return 0;
+        let r = Math.random() * total;
+        for (let i = 0; i < weightArray.length; i++) {
+            const w = Number.isFinite(weightArray[i]) ? Math.max(0, weightArray[i]) : 0;
+            r -= w;
+            if (r < 0) return i;
+        }
+        return weightArray.length - 1;
+    }
+
+    // 레이어 이름과 길이를 받아 가중치 기반 인덱스 선택 (fallback: 균등)
+    pickIndexWithWeights(layerName, length) {
+        const layerWeights = this.weights?.[layerName];
+        if (Array.isArray(layerWeights) && layerWeights.length === length) {
+            return this.weightedPickIndex(layerWeights);
+        }
+        return Math.floor(Math.random() * length);
+    }
+
     generateCharacter() {
         // 랜덤하게 캐릭터 생성
         this.currentCharacter = {
-            skin: Math.floor(Math.random() * this.images.skin.length),
-            face: Math.floor(Math.random() * this.images.face.length),
-            hair: Math.floor(Math.random() * this.images.hair.length)
+            skin: this.pickIndexWithWeights('skin', this.images.skin.length),
+            face: this.pickIndexWithWeights('face', this.images.face.length),
+            face2: this.pickIndexWithWeights('face2', this.images.face2.length),
+            hair: this.pickIndexWithWeights('hair', this.images.hair.length)
         };
         
         this.drawCharacter();
@@ -112,6 +199,11 @@ class CharacterGenerator {
         // 얼굴 그리기
         if (this.images.face[this.currentCharacter.face]) {
             tempCtx.drawImage(this.images.face[this.currentCharacter.face], 0, 0);
+        }
+        
+        // 얼굴2 그리기 (face 위 레이어)
+        if (this.images.face2[this.currentCharacter.face2]) {
+            tempCtx.drawImage(this.images.face2[this.currentCharacter.face2], 0, 0);
         }
         
         // 머리카락 그리기
