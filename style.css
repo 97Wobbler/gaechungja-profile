@@ -1,139 +1,169 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background: #F0F0F0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+  font-family: "Arial", sans-serif;
+  background: #f0f0f0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .container {
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    max-width: 500px;
-    width: 100%;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
 }
 
 h1 {
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 2.5rem;
-    font-weight: bold;
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  font-weight: bold;
 }
 
 .preview-container {
-    margin-bottom: 30px;
-    display: flex;
-    justify-content: center;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
 }
 
 .rarity {
-    margin-bottom: 16px;
-    color: #222;
-    font-size: 14px;
+  margin-bottom: 16px;
+  color: #222;
+  font-size: 14px;
 }
 
 #characterCanvas {
-    border-radius: 5px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
+  border-radius: 5px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .controls {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .btn {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 3px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 3px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
 }
 
 .generate-btn {
-    background: #1CA8AF;
-    color: white;
+  background: #1ca8af;
+  color: white;
 }
 
 .generate-btn:hover {
-    transform: translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .download-btn {
-    background: #fafafa;
-    color: #1CA8AF;
+  background: #fafafa;
+  color: #1ca8af;
 }
 
 .download-btn:hover {
-    transform: translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .btn:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 @media (max-width: 600px) {
-    .container {
-        padding: 20px;
-    }
-    
-    h1 {
-        font-size: 2rem;
-    }
-    
-    #characterCanvas {
-        width: 250px;
-        height: 250px;
-    }
-    
-    .controls {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .btn {
-        width: 100%;
-        max-width: 200px;
-    }
+  .container {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  #characterCanvas {
+    width: 250px;
+    height: 250px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 200px;
+  }
 }
 
 /* 등급별 색상 클래스 */
-.rank-ssss { 
-    animation: colorCycle 2s ease-in-out infinite;
+.rank-ssss {
+  animation: colorCycle 2s ease-in-out infinite;
 }
 
 @keyframes colorCycle {
-    0% { color: #ff0000; }   /* 빨강 */
-    14% { color: #ff7f00; }  /* 주황 */
-    28% { color: #ffff00; }  /* 노랑 */
-    42% { color: #00ff00; }  /* 초록 */
-    56% { color: #0000ff; }  /* 파랑 */
-    70% { color: #4b0082; }  /* 남색 */
-    84% { color: #9400d3; }  /* 보라 */
-    100% { color: #ff0000; } /* 빨강 */
+  0% {
+    color: #ff0000;
+  }
+  14% {
+    color: #ff7f00;
+  }
+  28% {
+    color: #ffff00;
+  }
+  42% {
+    color: #00ff00;
+  }
+  56% {
+    color: #0000ff;
+  }
+  70% {
+    color: #4b0082;
+  }
+  84% {
+    color: #9400d3;
+  }
+  100% {
+    color: #ff0000;
+  }
 }
 
-.rank-sss { color: #FFD700; }  /* 금색 */
-.rank-ss { color: #C0C0C0; }   /* 은색 */
-.rank-s { color: #CD7F32; }    /* 청동색 */
-.rank-a { color: #32CD32; }    /* 라임그린 */
-.rank-b { color: #1E90FF; }    /* 도저블루 */
-.rank-c { color: #9370DB; }    /* 미드나잇블루 */
-.rank-n { color: #808080; }    /* 회색 */
+.rank-sss {
+  color: #ffd700;
+}
+.rank-ss {
+  color: #c0c0c0;
+}
+.rank-s {
+  color: #cd7f32;
+}
+.rank-a {
+  color: #32cd32;
+}
+.rank-b {
+  color: #1e90ff;
+}
+.rank-c {
+  color: #9370db;
+}
+.rank-n {
+  color: #808080;
+}
