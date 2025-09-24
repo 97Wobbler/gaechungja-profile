@@ -134,24 +134,21 @@ class CharacterGenerator {
         } catch (_) {}
     }
     
-    // 가중치 배열에서 인덱스를 하나 선택
-    weightedPickIndex(weightArray) {
-        const total = weightArray.reduce((sum, w) => sum + (Number.isFinite(w) ? Math.max(0, w) : 0), 0);
-        if (total <= 0) return 0;
-        let r = Math.random() * total;
-        for (let i = 0; i < weightArray.length; i++) {
-            const w = Number.isFinite(weightArray[i]) ? Math.max(0, weightArray[i]) : 0;
-            r -= w;
-            if (r < 0) return i;
-        }
-        return weightArray.length - 1;
-    }
 
     // 레이어 이름과 길이를 받아 가중치 기반 인덱스 선택 (fallback: 균등)
     pickIndexWithWeights(layerName, length) {
         const layerWeights = this.weights?.[layerName];
         if (Array.isArray(layerWeights) && layerWeights.length === length) {
-            return this.weightedPickIndex(layerWeights);
+            // 가중치 기반 선택
+            const total = layerWeights.reduce((sum, w) => sum + (Number.isFinite(w) ? Math.max(0, w) : 0), 0);
+            if (total <= 0) return Math.floor(Math.random() * length);
+            let r = Math.random() * total;
+            for (let i = 0; i < layerWeights.length; i++) {
+                const w = Number.isFinite(layerWeights[i]) ? Math.max(0, layerWeights[i]) : 0;
+                r -= w;
+                if (r < 0) return i;
+            }
+            return layerWeights.length - 1;
         }
         return Math.floor(Math.random() * length);
     }
@@ -163,8 +160,8 @@ class CharacterGenerator {
             face: this.pickIndexWithWeights('face', this.images.face.length),
             face2: this.pickIndexWithWeights('face2', this.images.face2.length),
             hair: this.pickIndexWithWeights('hair', this.images.hair.length),
-            // 머리카락 Hue 무작위 (0~359)
-            hairHue: Math.floor(Math.random() * 360)
+            // 머리카락 Hue 무작위 (12단계: 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330)
+            hairHue: Math.floor(Math.random() * 12) * 30
         };
         
         this.drawCharacter();
@@ -373,6 +370,11 @@ class CharacterGenerator {
             tempCtx.drawImage(this.images.face[this.currentCharacter.face], 0, 0);
         }
         
+        // 얼굴2 그리기 (face 위 레이어)
+        if (this.images.face2[this.currentCharacter.face2]) {
+            tempCtx.drawImage(this.images.face2[this.currentCharacter.face2], 0, 0);
+        }
+        
         // 머리카락 그리기 (다운로드용에도 동일 적용)
         if (this.images.hair[this.currentCharacter.hair]) {
             const hairImg = this.images.hair[this.currentCharacter.hair];
@@ -436,18 +438,9 @@ class CharacterGenerator {
         const score = this.computeRarityScore();
         const grade = this.scoreToGrade(score);
         
-        // 등급별 색상 설정
-        let color = '#555';
-        if (grade === 'SSSS') color = '#FF69B4'; // 핫핑크
-        else if (grade === 'SSS') color = '#FFD700'; // 금색
-        else if (grade === 'SS') color = '#C0C0C0'; // 은색
-        else if (grade === 'S') color = '#CD7F32'; // 청동색
-        else if (grade === 'A') color = '#32CD32'; // 라임그린
-        else if (grade === 'B') color = '#1E90FF'; // 도저블루
-        else if (grade === 'C') color = '#9370DB'; // 미드나잇블루
-        else if (grade === 'N') color = '#808080'; // 회색
-        
-        el.innerHTML = `희귀도: <span style="color: ${color}; font-weight: bold;">${grade}</span>`;
+        // 등급에 맞는 CSS 클래스 적용
+        const gradeClass = `rank-${grade.toLowerCase()}`;
+        el.innerHTML = `희귀도: <span class="${gradeClass}" style="font-weight: bold;">${grade}</span>`;
     }
     
     drawImageWithOutlineForDownload(compositeCanvas, ctx, centerX, centerY, scaledSize) {

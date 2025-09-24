@@ -113,3 +113,27 @@ h1 {
         max-width: 200px;
     }
 }
+
+/* 등급별 색상 클래스 */
+.rank-ssss { 
+    animation: colorCycle 2s ease-in-out infinite;
+}
+
+@keyframes colorCycle {
+    0% { color: #ff0000; }   /* 빨강 */
+    14% { color: #ff7f00; }  /* 주황 */
+    28% { color: #ffff00; }  /* 노랑 */
+    42% { color: #00ff00; }  /* 초록 */
+    56% { color: #0000ff; }  /* 파랑 */
+    70% { color: #4b0082; }  /* 남색 */
+    84% { color: #9400d3; }  /* 보라 */
+    100% { color: #ff0000; } /* 빨강 */
+}
+
+.rank-sss { color: #FFD700; }  /* 금색 */
+.rank-ss { color: #C0C0C0; }   /* 은색 */
+.rank-s { color: #CD7F32; }    /* 청동색 */
+.rank-a { color: #32CD32; }    /* 라임그린 */
+.rank-b { color: #1E90FF; }    /* 도저블루 */
+.rank-c { color: #9370DB; }    /* 미드나잇블루 */
+.rank-n { color: #808080; }    /* 회색 */
