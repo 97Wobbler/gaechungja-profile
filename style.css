@@ -35,6 +35,12 @@ h1 {
     justify-content: center;
 }
 
+.rarity {
+    margin-bottom: 16px;
+    color: #222;
+    font-size: 14px;
+}
+
 #characterCanvas {
     border-radius: 5px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);

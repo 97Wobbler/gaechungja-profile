@@ -15,14 +15,7 @@ class CharacterGenerator {
         };
         Object.values(this.sfx).forEach(a => { a.preload = 'auto'; a.volume = 0.5; });
         
-        // 파츠별 가중치 설정 (인덱스 순서대로). 기본값은 1
-        // 필요 시 숫자를 조정하세요. 예: 더 자주 나오게 하려면 큰 수
-        this.weights = {
-            skin: Array(9).fill(1),   // 9개
-            face: Array(9).fill(1),   // 9개
-            face2: Array(7).fill(1),  // 7개
-            hair: Array(25).fill(1),  // 25개
-        };
+        this.weights = {};
 
         this.images = {
             skin: [],
@@ -34,7 +27,8 @@ class CharacterGenerator {
             skin: 0,
             face: 0,
             face2: 0,
-            hair: 0
+            hair: 0,
+            hairHue: 0
         };
         
         this.init();
@@ -52,6 +46,10 @@ class CharacterGenerator {
             const res = await fetch('assets/data/resources.json', { cache: 'no-cache' });
             const json = await res.json();
             const parts = json?.parts || {};
+            
+            // 전체 JSON 데이터 저장 (scoreFactor 접근용)
+            this.resourceData = json;
+            
             // weights를 JSON 기반으로 재설정 (존재 시에만)
             const toWeights = (arr) => Array.isArray(arr) ? arr.map(x => Number(x?.possibility ?? 1) || 0) : [];
             if (parts.skin) this.weights.skin = toWeights(parts.skin);
@@ -164,10 +162,59 @@ class CharacterGenerator {
             skin: this.pickIndexWithWeights('skin', this.images.skin.length),
             face: this.pickIndexWithWeights('face', this.images.face.length),
             face2: this.pickIndexWithWeights('face2', this.images.face2.length),
-            hair: this.pickIndexWithWeights('hair', this.images.hair.length)
+            hair: this.pickIndexWithWeights('hair', this.images.hair.length),
+            // 머리카락 Hue 무작위 (0~359)
+            hairHue: Math.floor(Math.random() * 360)
         };
         
         this.drawCharacter();
+        this.updateRarity();
+    }
+
+    // ImageData의 Hue를 변경 (HSB/HSL에서 H만 회전)
+    shiftHueOnImageData(imageData, hueDeltaDegrees) {
+        const data = imageData.data;
+        const hueDelta = ((hueDeltaDegrees % 360) + 360) % 360; // 0..359
+        for (let i = 0; i < data.length; i += 4) {
+            const a = data[i + 3];
+            if (a === 0) continue; // 완전 투명은 스킵
+            const r = data[i] / 255;
+            const g = data[i + 1] / 255;
+            const b = data[i + 2] / 255;
+            // RGB -> HSL
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h = 0;
+            const l = (max + min) / 2;
+            const d = max - min;
+            let s = 0;
+            if (d !== 0) {
+                s = d / (1 - Math.abs(2 * l - 1));
+                switch (max) {
+                    case r: h = 60 * (((g - b) / d) % 6); break;
+                    case g: h = 60 * (((b - r) / d) + 2); break;
+                    case b: h = 60 * (((r - g) / d) + 4); break;
+                }
+            }
+            if (h < 0) h += 360;
+            // Hue 회전
+            h = (h + hueDelta) % 360;
+            // HSL -> RGB
+            const c = (1 - Math.abs(2 * l - 1)) * s;
+            const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+            const m = l - c / 2;
+            let r1 = 0, g1 = 0, b1 = 0;
+            if (0 <= h && h < 60) { r1 = c; g1 = x; b1 = 0; }
+            else if (60 <= h && h < 120) { r1 = x; g1 = c; b1 = 0; }
+            else if (120 <= h && h < 180) { r1 = 0; g1 = c; b1 = x; }
+            else if (180 <= h && h < 240) { r1 = 0; g1 = x; b1 = c; }
+            else if (240 <= h && h < 300) { r1 = x; g1 = 0; b1 = c; }
+            else { r1 = c; g1 = 0; b1 = x; }
+            data[i]     = Math.round((r1 + m) * 255);
+            data[i + 1] = Math.round((g1 + m) * 255);
+            data[i + 2] = Math.round((b1 + m) * 255);
+        }
+        return imageData;
     }
     
     drawCharacter() {
@@ -208,7 +255,18 @@ class CharacterGenerator {
         
         // 머리카락 그리기
         if (this.images.hair[this.currentCharacter.hair]) {
-            tempCtx.drawImage(this.images.hair[this.currentCharacter.hair], 0, 0);
+            // 머리카락 Hue 변환 후 합성
+            const hairImg = this.images.hair[this.currentCharacter.hair];
+            const hairCanvas = document.createElement('canvas');
+            hairCanvas.width = 32;
+            hairCanvas.height = 32;
+            const hairCtx = hairCanvas.getContext('2d');
+            hairCtx.imageSmoothingEnabled = false;
+            hairCtx.drawImage(hairImg, 0, 0);
+            const hairData = hairCtx.getImageData(0, 0, 32, 32);
+            this.shiftHueOnImageData(hairData, this.currentCharacter.hairHue);
+            hairCtx.putImageData(hairData, 0, 0);
+            tempCtx.drawImage(hairCanvas, 0, 0);
         }
         
         // 합성된 이미지에 아웃라인 적용
@@ -315,9 +373,19 @@ class CharacterGenerator {
             tempCtx.drawImage(this.images.face[this.currentCharacter.face], 0, 0);
         }
         
-        // 머리카락 그리기
+        // 머리카락 그리기 (다운로드용에도 동일 적용)
         if (this.images.hair[this.currentCharacter.hair]) {
-            tempCtx.drawImage(this.images.hair[this.currentCharacter.hair], 0, 0);
+            const hairImg = this.images.hair[this.currentCharacter.hair];
+            const hairCanvas = document.createElement('canvas');
+            hairCanvas.width = 32;
+            hairCanvas.height = 32;
+            const hairCtx = hairCanvas.getContext('2d');
+            hairCtx.imageSmoothingEnabled = false;
+            hairCtx.drawImage(hairImg, 0, 0);
+            const hairData = hairCtx.getImageData(0, 0, 32, 32);
+            this.shiftHueOnImageData(hairData, this.currentCharacter.hairHue);
+            hairCtx.putImageData(hairData, 0, 0);
+            tempCtx.drawImage(hairCanvas, 0, 0);
         }
         
         // 합성된 이미지에 아웃라인 적용 (투명 배경)
@@ -328,6 +396,58 @@ class CharacterGenerator {
         link.download = `gaechungja.png`;
         link.href = downloadCanvas.toDataURL('image/png');
         link.click();
+    }
+
+    // scoreFactor 기반 희귀도 스코어 계산 (높을수록 희귀)
+    computeRarityScore() {
+        const getScoreFactor = (layerName, index) => {
+            // this.keys는 키 배열이므로, 실제 파트 데이터를 찾아야 함
+            if (!this.resourceData?.parts?.[layerName]) return 1.0;
+            const parts = this.resourceData.parts[layerName];
+            if (!parts.length || index >= parts.length) return 1.0;
+            return Number.isFinite(parts[index]?.scoreFactor) ? parts[index].scoreFactor : 1.0;
+        };
+        
+        const skinScore = getScoreFactor('skin', this.currentCharacter.skin);
+        const faceScore = getScoreFactor('face', this.currentCharacter.face);
+        const face2Score = getScoreFactor('face2', this.currentCharacter.face2);
+        const hairScore = getScoreFactor('hair', this.currentCharacter.hair);
+        
+        // 각 레이어의 scoreFactor 합산 (높을수록 희귀)
+        return skinScore + faceScore + face2Score + hairScore;
+    }
+
+    // 점수 기반 등급 계산
+    scoreToGrade(score) {
+        if (score >= 16) return 'SSSS';
+        if (score >= 13) return 'SSS';
+        if (score >= 10) return 'SS';
+        if (score >= 7) return 'S';
+        if (score >= 5) return 'A';
+        if (score >= 4) return 'B';
+        if (score >= 3) return 'C';
+        return 'N';
+    }
+
+    // 희귀도 UI 업데이트
+    updateRarity() {
+        const el = document.getElementById('rarity');
+        if (!el) return;
+        const score = this.computeRarityScore();
+        const grade = this.scoreToGrade(score);
+        
+        // 등급별 색상 설정
+        let color = '#555';
+        if (grade === 'SSSS') color = '#FF69B4'; // 핫핑크
+        else if (grade === 'SSS') color = '#FFD700'; // 금색
+        else if (grade === 'SS') color = '#C0C0C0'; // 은색
+        else if (grade === 'S') color = '#CD7F32'; // 청동색
+        else if (grade === 'A') color = '#32CD32'; // 라임그린
+        else if (grade === 'B') color = '#1E90FF'; // 도저블루
+        else if (grade === 'C') color = '#9370DB'; // 미드나잇블루
+        else if (grade === 'N') color = '#808080'; // 회색
+        
+        el.innerHTML = `희귀도: <span style="color: ${color}; font-weight: bold;">${grade}</span>`;
     }
     
     drawImageWithOutlineForDownload(compositeCanvas, ctx, centerX, centerY, scaledSize) {
