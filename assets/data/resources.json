@@ -21,7 +21,8 @@
       { "id": 5, "key": "005", "possibility": 8, "scoreFactor": 2 },
       { "id": 6, "key": "006", "possibility": 10, "scoreFactor": 3 },
       { "id": 7, "key": "007", "possibility": 15, "scoreFactor": 1 },
-      { "id": 8, "key": "008", "possibility": 5, "scoreFactor": 3 }
+      { "id": 8, "key": "008", "possibility": 5, "scoreFactor": 3 },
+      { "id": 9, "key": "009", "possibility": 3, "scoreFactor": 3 }
     ],
     "face2": [
       { "id": 0, "key": "000", "possibility": 50, "scoreFactor": 0 },
@@ -30,7 +31,12 @@
       { "id": 3, "key": "003", "possibility": 2, "scoreFactor": 4 },
       { "id": 4, "key": "004", "possibility": 4, "scoreFactor": 3 },
       { "id": 5, "key": "005", "possibility": 5, "scoreFactor": 2 },
-      { "id": 6, "key": "006", "possibility": 6, "scoreFactor": 1 }
+      { "id": 6, "key": "006", "possibility": 6, "scoreFactor": 1 },
+      { "id": 7, "key": "007", "possibility": 1, "scoreFactor": 5 },
+      { "id": 8, "key": "008", "possibility": 2, "scoreFactor": 4 },
+      { "id": 9, "key": "009", "possibility": 1, "scoreFactor": 3 },
+      { "id": 10, "key": "010", "possibility": 1, "scoreFactor": 3 },
+      { "id": 11, "key": "011", "possibility": 2, "scoreFactor": 3 }
     ],
     "hair": [
       { "id": 0, "key": "000", "possibility": 1, "scoreFactor": 5 },
@@ -57,7 +63,8 @@
       { "id": 21, "key": "021", "possibility": 10, "scoreFactor": 0 },
       { "id": 22, "key": "022", "possibility": 10, "scoreFactor": 0 },
       { "id": 23, "key": "023", "possibility": 10, "scoreFactor": 0 },
-      { "id": 24, "key": "024", "possibility": 5, "scoreFactor": 2 }
+      { "id": 24, "key": "024", "possibility": 5, "scoreFactor": 2 },
+      { "id": 25, "key": "025", "possibility": 2, "scoreFactor": 3 }
     ]
   }
 }
