@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 
 body {
@@ -18,15 +19,8 @@ body {
   border-radius: 20px;
   padding: 30px;
   text-align: center;
-  max-width: 500px;
+  max-width: 400px;
   width: 100%;
-}
-
-h1 {
-  color: #333;
-  margin-bottom: 30px;
-  font-size: 2.5rem;
-  font-weight: bold;
 }
 
 .preview-container {
@@ -94,8 +88,11 @@ h1 {
     padding: 20px;
   }
 
-  h1 {
-    font-size: 2rem;
+  body {
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
   }
 
   #characterCanvas {
@@ -116,10 +113,11 @@ h1 {
 
 /* 등급별 색상 클래스 */
 .rank-ssss {
-  animation: colorCycle 2s ease-in-out infinite;
+  font-weight: bold;
+  animation: rainbow 2s ease-in-out infinite;
 }
 
-@keyframes colorCycle {
+@keyframes rainbow {
   0% {
     color: #ff0000;
   }
@@ -147,14 +145,57 @@ h1 {
 }
 
 .rank-sss {
-  color: #ffd700;
+  font-weight: bold;
+  animation: gold-rainbow 2s ease-in-out infinite;
 }
+
+@keyframes gold-rainbow {
+ 
+  0% {
+    color: #ffd700;
+  }
+  50% {
+    color: #ffac2f;
+  }
+  100% {
+    color: #ffd700;
+  }
+}
+
 .rank-ss {
-  color: #c0c0c0;
+  font-weight: bold;
+  animation: silver-rainbow 2s ease-in-out infinite;
 }
+
+@keyframes silver-rainbow {
+  0% {
+    color: #c0c0c0;
+  }
+  50% {
+    color: #808080;
+  }
+  100% {
+    color: #c0c0c0;
+  }
+}
+
 .rank-s {
-  color: #cd7f32;
+  font-weight: bold;
+  animation: bronze-rainbow 2s ease-in-out infinite;
 }
+
+@keyframes bronze-rainbow {
+  0% {
+    color: #cd7f32;
+  }
+  50% {
+    color: #a05200;
+  }
+  100% {
+    color: #cd7f32;
+  }
+}
+
 .rank-a {
   color: #32cd32;
 }
@@ -166,4 +207,31 @@ h1 {
 }
 .rank-n {
   color: #808080;
+}
+
+/* 통계 UI */
+.stats {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-table {
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+.stats-table th,
+.stats-table td {
+  min-width: 80px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: left;
+  padding: 4px 8px;
+}
+.stats-table thead th {
+  font-weight: bold;
+}
+.stats-total {
+  font-weight: bold;
 }

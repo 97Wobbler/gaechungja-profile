@@ -1,10 +1,11 @@
 import { loadResources } from "./resources.js";
 import { loadAllImages } from "./images.js";
 import { pickIndexWithWeights } from "./generator.js";
-import { computeRarityScore, scoreToGrade } from "./rarity.js";
+import { computeRarityScore, scoreToGrade, RANK_SCORE } from "./rarity.js";
 import { drawCharacter, downloadCharacter } from "./renderer.js";
 import { setupUI } from "./ui.js";
 import { createAudio } from "./audio.js";
+import { loadStats, saveStats, increment, renderStats } from "./stats.js";
 
 export class CharacterGenerator {
   constructor() {
@@ -16,7 +17,8 @@ export class CharacterGenerator {
     this.ctx.msImageSmoothingEnabled = false;
 
     this.sfx = {
-      generate: createAudio("assets/audio/soundeffect.mp3"),
+      wood_block: createAudio("assets/audio/wood_block.mp3"),
+      banger_ayo: createAudio("assets/audio/banger_ayo.mp3", 1),
     };
 
     this.weights = {};
@@ -25,6 +27,10 @@ export class CharacterGenerator {
     this.resourceData = null;
 
     this.currentCharacter = { skin: 0, face: 0, face2: 0, hair: 0, hairHue: 0 };
+
+    // 생성 버튼 쿨다운 플래그 및 참조
+    this.isGenerateCooldown = false;
+    this.generateBtn = document.getElementById("generateBtn");
   }
 
   async init() {
@@ -35,15 +41,28 @@ export class CharacterGenerator {
 
     this.images = await loadAllImages(this.keys);
 
+    // 통계 로드 및 초기 렌더
+    this.stats = loadStats();
+    renderStats(this.stats);
+
     setupUI({
       onGenerate: () => {
+        if (this.isGenerateCooldown) return; // 쿨다운 중이면 무시
         this.generateCharacter();
-        this.playSfx("generate");
+        this.playSfxByScore();
       },
       onDownload: () => this.downloadCharacter(),
     });
 
     this.generateCharacter();
+  }
+
+  playSfxByScore() {
+    if (this.score >= RANK_SCORE.S) {
+      this.playSfx("banger_ayo");
+    } else {
+      this.playSfx("wood_block");
+    }
   }
 
   playSfx(name) {
@@ -70,12 +89,28 @@ export class CharacterGenerator {
       current: this.currentCharacter,
     });
 
-    const score = computeRarityScore(this.resourceData, this.currentCharacter);
-    const grade = scoreToGrade(score);
+    this.score = computeRarityScore(this.resourceData, this.currentCharacter);
+    const grade = scoreToGrade(this.score);
+
     const rarityEl = document.getElementById("rarity");
     if (rarityEl) {
       const gradeClass = `rank-${grade.toLowerCase()}`;
       rarityEl.innerHTML = `희귀도: <span class="${gradeClass}" style="font-weight: bold;">${grade}</span>`;
+    }
+    
+    // 통계 업데이트 및 저장/표시
+    increment(this.stats, grade);
+    saveStats(this.stats);
+    renderStats(this.stats);
+    
+    if (this.score >= RANK_SCORE.S) {
+      this.isGenerateCooldown = true;
+      if (this.generateBtn) this.generateBtn.classList.add("cooldown");
+
+      setTimeout(() => {
+        this.isGenerateCooldown = false;
+        if (this.generateBtn) this.generateBtn.classList.remove("cooldown");
+      }, 1000);
     }
   }
 

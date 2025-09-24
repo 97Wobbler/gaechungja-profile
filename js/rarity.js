@@ -1,3 +1,13 @@
+export const RANK_SCORE = {
+  SSSS: 13,
+  SSS: 11,
+  SS: 9.5,
+  S: 8,
+  A: 5.5,
+  B: 3.5,
+  C: 1,
+};
+
 export function computeRarityScore(resourceData, current) {
   const getScoreFactor = (layerName, index) => {
     if (!resourceData?.parts?.[layerName]) return 1.0;
@@ -16,12 +26,12 @@ export function computeRarityScore(resourceData, current) {
 }
 
 export function scoreToGrade(score) {
-  if (score >= 16) return "SSSS";
-  if (score >= 13) return "SSS";
-  if (score >= 10) return "SS";
-  if (score >= 7) return "S";
-  if (score >= 5) return "A";
-  if (score >= 4) return "B";
-  if (score >= 3) return "C";
+  if (score >= RANK_SCORE.SSSS) return "SSSS";
+  if (score >= RANK_SCORE.SSS) return "SSS";
+  if (score >= RANK_SCORE.SS) return "SS";
+  if (score >= RANK_SCORE.S) return "S";
+  if (score >= RANK_SCORE.A) return "A";
+  if (score >= RANK_SCORE.B) return "B";
+  if (score >= RANK_SCORE.C) return "C";
   return "N";
 }
