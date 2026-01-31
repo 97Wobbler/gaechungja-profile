@@ -1,6 +1,9 @@
 # OS
 .DS_Store
 
+# Node.js
+node_modules/
+
 # AI Agent
 _bmad/
 _bmad-output/
@@ -8,3 +11,6 @@ _bmad-output/
 
 # Private documents
 docs/private/
+
+# Output
+output/
