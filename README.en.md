@@ -2,6 +2,8 @@
 
 [![한국어](https://img.shields.io/badge/lang-한국어-green)](./README.md)
 
+![Gaechungja Generator](assets/images/banner.png)
+
 > 🎮 **[Try it now](https://97wobbler.github.io/gaechungja-profile/)**
 
 A web app for generating and downloading random Gaechungja icons.

@@ -2,6 +2,8 @@
 
 [![English](https://img.shields.io/badge/lang-English-blue)](./README.en.md)
 
+![개청자 생성기](assets/images/banner.png)
+
 > 🎮 **[지금 바로 사용해보기](https://97wobbler.github.io/gaechungja-profile/)**
 
 랜덤 개청자 아이콘을 생성하고 다운로드할 수 있는 웹 앱입니다.
