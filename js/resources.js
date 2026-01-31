@@ -1,5 +1,8 @@
 export async function loadResources() {
   const res = await fetch("assets/data/resources.json", { cache: "no-cache" });
+  if (!res.ok) {
+    throw new Error(`Failed to load resources: ${res.status}`);
+  }
   const json = await res.json();
   const parts = json?.parts || {};
 

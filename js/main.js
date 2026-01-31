@@ -1,11 +1,13 @@
 import { loadResources } from "./resources.js";
-import { loadAllImages } from "./images.js";
+import { getImagesForCharacter } from "./images.js";
 import { pickIndexWithWeights } from "./generator.js";
 import { computeRarityScore, scoreToGrade, RANK_SCORE } from "./rarity.js";
 import { drawCharacter, downloadCharacter } from "./renderer.js";
 import { setupUI } from "./ui.js";
 import { createAudio } from "./audio.js";
 import { loadStats, saveStats, increment, renderStats } from "./stats.js";
+import { applyI18n, t } from "./i18n.js";
+import { VERSION } from "./version.js";
 
 export class CharacterGenerator {
   constructor() {
@@ -22,7 +24,6 @@ export class CharacterGenerator {
     };
 
     this.weights = {};
-    this.images = { skin: [], face: [], face2: [], hair: [] };
     this.keys = { skin: [], face: [], face2: [], hair: [] };
     this.resourceData = null;
 
@@ -34,27 +35,32 @@ export class CharacterGenerator {
   }
 
   async init() {
+    // i18n 적용
+    applyI18n();
+
+    // 버전 표시
+    const versionEl = document.getElementById("version");
+    if (versionEl) versionEl.textContent = `v${VERSION}`;
+
     const { resourceData, weights, keys } = await loadResources();
     this.resourceData = resourceData;
     this.weights = weights;
     this.keys = keys;
-
-    this.images = await loadAllImages(this.keys);
 
     // 통계 로드 및 초기 렌더
     this.stats = loadStats();
     renderStats(this.stats);
 
     setupUI({
-      onGenerate: () => {
+      onGenerate: async () => {
         if (this.isGenerateCooldown) return; // 쿨다운 중이면 무시
-        this.generateCharacter();
+        await this.generateCharacter();
         this.playSfxByScore();
       },
       onDownload: () => this.downloadCharacter(),
     });
 
-    this.generateCharacter();
+    await this.generateCharacter();
   }
 
   playSfxByScore() {
@@ -74,19 +80,29 @@ export class CharacterGenerator {
     } catch (_) {}
   }
 
-  generateCharacter() {
+  async generateCharacter() {
     this.currentCharacter = {
-      skin: pickIndexWithWeights(this.weights.skin, this.images.skin.length),
-      face: pickIndexWithWeights(this.weights.face, this.images.face.length),
-      face2: pickIndexWithWeights(this.weights.face2, this.images.face2.length),
-      hair: pickIndexWithWeights(this.weights.hair, this.images.hair.length),
+      skin: pickIndexWithWeights(this.weights.skin, this.keys.skin?.length || 9),
+      face: pickIndexWithWeights(this.weights.face, this.keys.face?.length || 9),
+      face2: pickIndexWithWeights(this.weights.face2, this.keys.face2?.length || 12),
+      hair: pickIndexWithWeights(this.weights.hair, this.keys.hair?.length || 26),
       hairHue: Math.floor(Math.random() * 12) * 30,
+    };
+
+    // 온디맨드 이미지 로딩
+    const images = await getImagesForCharacter(this.currentCharacter, this.keys);
+    const renderCurrent = {
+      skin: 0,
+      face: 0,
+      face2: 0,
+      hair: 0,
+      hairHue: this.currentCharacter.hairHue,
     };
 
     drawCharacter({
       ctx: this.ctx,
-      images: this.images,
-      current: this.currentCharacter,
+      images,
+      current: renderCurrent,
     });
 
     this.score = computeRarityScore(this.resourceData, this.currentCharacter);
@@ -95,14 +111,14 @@ export class CharacterGenerator {
     const rarityEl = document.getElementById("rarity");
     if (rarityEl) {
       const gradeClass = `rank-${grade.toLowerCase()}`;
-      rarityEl.innerHTML = `희귀도: <span class="${gradeClass}" style="font-weight: bold;">${grade}</span>`;
+      rarityEl.innerHTML = `${t("rarity")}: <span class="${gradeClass}" style="font-weight: bold;">${grade}</span>`;
     }
-    
+
     // 통계 업데이트 및 저장/표시
     increment(this.stats, grade);
     saveStats(this.stats);
     renderStats(this.stats);
-    
+
     if (this.score >= RANK_SCORE.S) {
       this.isGenerateCooldown = true;
       if (this.generateBtn) this.generateBtn.classList.add("cooldown");
@@ -114,11 +130,19 @@ export class CharacterGenerator {
     }
   }
 
-  downloadCharacter() {
+  async downloadCharacter() {
+    const images = await getImagesForCharacter(this.currentCharacter, this.keys);
+    const renderCurrent = {
+      skin: 0,
+      face: 0,
+      face2: 0,
+      hair: 0,
+      hairHue: this.currentCharacter.hairHue,
+    };
     downloadCharacter({
       canvas: this.canvas,
-      images: this.images,
-      current: this.currentCharacter,
+      images,
+      current: renderCurrent,
     });
   }
 }
