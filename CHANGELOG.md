@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-01-31
+
+### Added
+- 우측 상단 언어 전환 스위치 (KR/EN)
+- 언어 설정 localStorage 저장
+- 모바일: 통계 모달 버튼 및 바텀시트 UI
+
+### Improved
+- UI 디자인 개선: 통계 사이드바 레이아웃, 등급별 배경색
+- Pretendard 폰트 적용
+
 ## [1.0.2] - 2026-01-31
 
 ### Added

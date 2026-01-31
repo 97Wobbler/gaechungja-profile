@@ -6,7 +6,7 @@ import { drawCharacter, downloadCharacter } from "./renderer.js";
 import { setupUI } from "./ui.js";
 import { createAudio } from "./audio.js";
 import { loadStats, saveStats, increment, renderStats } from "./stats.js";
-import { applyI18n, t } from "./i18n.js";
+import { initI18n, t } from "./i18n.js";
 import { VERSION } from "./version.js";
 
 export class CharacterGenerator {
@@ -36,7 +36,7 @@ export class CharacterGenerator {
 
   async init() {
     // i18n 적용
-    applyI18n();
+    initI18n();
 
     // 버전 표시
     const versionEl = document.getElementById("version");

@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>개청자 생성기</title>
     <link rel="icon" type="image/png" href="assets/favicon/favicon.png" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- 좌측 상단 고정 -->
     <div class="top-bar">
       <a
         href="https://github.com/97Wobbler/gaechungja-profile"
@@ -15,7 +21,7 @@
         rel="noopener noreferrer"
         class="github-link"
         aria-label="View source code on GitHub"
-        title="View source code on GitHub"
+        title="GitHub에서 보기"
       >
         <svg
           width="20"
@@ -34,67 +40,194 @@
       <span id="version" class="version"></span>
     </div>
 
-    <div id="stats" class="stats">
-      <table class="stats-table">
-        <thead>
-          <tr>
-            <th data-i18n="grade">등급</th>
-            <th data-i18n="count">개수</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="rank-ssss">SSSS</span></td>
-            <td id="count-ssss">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-sss">SSS</span></td>
-            <td id="count-sss">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-ss">SS</span></td>
-            <td id="count-ss">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-s">S</span></td>
-            <td id="count-s">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-a">A</span></td>
-            <td id="count-a">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-b">B</span></td>
-            <td id="count-b">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-c">C</span></td>
-            <td id="count-c">0</td>
-          </tr>
-          <tr>
-            <td><span class="rank-n">N</span></td>
-            <td id="count-n">0</td>
-          </tr>
-          <tr>
-            <td class="stats-total" data-i18n="total">총 시도</td>
-            <td id="count-total">0</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- 우측 상단 언어 스위치 -->
+    <div class="lang-switch-container">
+      <span class="lang-label">KR</span>
+      <label class="lang-switch">
+        <input type="checkbox" id="langSwitch" />
+        <span class="lang-slider"></span>
+      </label>
+      <span class="lang-label">EN</span>
     </div>
 
-    <div class="container">
-      <div class="preview-container">
-        <canvas id="characterCanvas" width="320" height="320"></canvas>
-      </div>
-      <div id="rarity" class="rarity" data-i18n="rarity_loading">희귀도 계산중...</div>
+    <div class="app-layout">
+      <!-- 메인 영역 -->
+      <main class="main-content">
+        <div class="preview-container">
+          <canvas id="characterCanvas" width="320" height="320"></canvas>
+        </div>
+        <div id="rarity" class="rarity">
+          희귀도 계산중...
+        </div>
 
-      <div class="controls">
-        <button id="generateBtn" class="btn generate-btn" data-i18n="generate">생성</button>
-        <button id="downloadBtn" class="btn download-btn" data-i18n="download">다운로드</button>
+        <div class="controls">
+          <button id="generateBtn" class="btn generate-btn" data-i18n="generate">
+            생성
+          </button>
+          <button id="downloadBtn" class="btn download-btn" data-i18n="download">
+            다운로드
+          </button>
+        </div>
+      </main>
+
+      <!-- 통계 사이드바 (데스크톱) -->
+      <aside id="stats" class="stats-sidebar">
+        <div class="stats-list">
+          <div class="stat-row rank-ssss-bg">
+            <span class="stat-rank rank-ssss">SSSS</span>
+            <span class="stat-count" id="count-ssss">0</span>
+          </div>
+          <div class="stat-row rank-sss-bg">
+            <span class="stat-rank rank-sss">SSS</span>
+            <span class="stat-count" id="count-sss">0</span>
+          </div>
+          <div class="stat-row rank-ss-bg">
+            <span class="stat-rank rank-ss">SS</span>
+            <span class="stat-count" id="count-ss">0</span>
+          </div>
+          <div class="stat-row rank-s-bg">
+            <span class="stat-rank rank-s">S</span>
+            <span class="stat-count" id="count-s">0</span>
+          </div>
+          <div class="stat-row rank-a-bg">
+            <span class="stat-rank rank-a">A</span>
+            <span class="stat-count" id="count-a">0</span>
+          </div>
+          <div class="stat-row rank-b-bg">
+            <span class="stat-rank rank-b">B</span>
+            <span class="stat-count" id="count-b">0</span>
+          </div>
+          <div class="stat-row rank-c-bg">
+            <span class="stat-rank rank-c">C</span>
+            <span class="stat-count" id="count-c">0</span>
+          </div>
+          <div class="stat-row rank-n-bg">
+            <span class="stat-rank rank-n">N</span>
+            <span class="stat-count" id="count-n">0</span>
+          </div>
+        </div>
+        <div class="stats-total-row">
+          <span data-i18n="total">총</span>
+          <span class="stats-total-count" id="count-total">0</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 모바일 통계 버튼 -->
+    <button id="statsToggleBtn" class="stats-toggle-btn" aria-label="통계 보기">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 20V10"/>
+        <path d="M12 20V4"/>
+        <path d="M6 20v-6"/>
+      </svg>
+    </button>
+
+    <!-- 모바일 통계 모달 -->
+    <div id="statsModal" class="stats-modal">
+      <div class="stats-modal-backdrop"></div>
+      <div class="stats-modal-content">
+        <div class="stats-modal-header">
+          <span data-i18n="stats_title">수집 현황</span>
+          <button id="statsModalClose" class="stats-modal-close" aria-label="닫기">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6L6 18"/>
+              <path d="M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="stats-modal-body">
+          <div class="stats-list">
+            <div class="stat-row rank-ssss-bg">
+              <span class="stat-rank rank-ssss">SSSS</span>
+              <span class="stat-count" id="modal-count-ssss">0</span>
+            </div>
+            <div class="stat-row rank-sss-bg">
+              <span class="stat-rank rank-sss">SSS</span>
+              <span class="stat-count" id="modal-count-sss">0</span>
+            </div>
+            <div class="stat-row rank-ss-bg">
+              <span class="stat-rank rank-ss">SS</span>
+              <span class="stat-count" id="modal-count-ss">0</span>
+            </div>
+            <div class="stat-row rank-s-bg">
+              <span class="stat-rank rank-s">S</span>
+              <span class="stat-count" id="modal-count-s">0</span>
+            </div>
+            <div class="stat-row rank-a-bg">
+              <span class="stat-rank rank-a">A</span>
+              <span class="stat-count" id="modal-count-a">0</span>
+            </div>
+            <div class="stat-row rank-b-bg">
+              <span class="stat-rank rank-b">B</span>
+              <span class="stat-count" id="modal-count-b">0</span>
+            </div>
+            <div class="stat-row rank-c-bg">
+              <span class="stat-rank rank-c">C</span>
+              <span class="stat-count" id="modal-count-c">0</span>
+            </div>
+            <div class="stat-row rank-n-bg">
+              <span class="stat-rank rank-n">N</span>
+              <span class="stat-count" id="modal-count-n">0</span>
+            </div>
+          </div>
+          <div class="stats-total-row">
+            <span data-i18n="total">총</span>
+            <span class="stats-total-count" id="modal-count-total">0</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <script type="module" src="js/main.js"></script>
+    <script type="module">
+      import { setLanguage, getCurrentLang } from './js/i18n.js';
+
+      // 언어 스위치 이벤트
+      document.addEventListener('DOMContentLoaded', function() {
+        const langSwitch = document.getElementById('langSwitch');
+        langSwitch.addEventListener('change', function() {
+          setLanguage(this.checked ? 'en' : 'ko');
+        });
+      });
+    </script>
+    <script>
+      // 모바일 통계 모달 토글
+      document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('statsToggleBtn');
+        const modal = document.getElementById('statsModal');
+        const closeBtn = document.getElementById('statsModalClose');
+        const backdrop = modal.querySelector('.stats-modal-backdrop');
+
+        function openModal() {
+          // 사이드바 통계를 모달에 동기화
+          const ranks = ['ssss', 'sss', 'ss', 's', 'a', 'b', 'c', 'n', 'total'];
+          ranks.forEach(rank => {
+            const sidebarEl = document.getElementById('count-' + rank);
+            const modalEl = document.getElementById('modal-count-' + rank);
+            if (sidebarEl && modalEl) {
+              modalEl.textContent = sidebarEl.textContent;
+            }
+          });
+          modal.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+          modal.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+
+        toggleBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        backdrop.addEventListener('click', closeModal);
+
+        // ESC 키로 닫기
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && modal.classList.contains('open')) {
+            closeModal();
+          }
+        });
+      });
+    </script>
   </body>
 </html>
