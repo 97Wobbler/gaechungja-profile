@@ -8,6 +8,7 @@ node_modules/
 _bmad/
 _bmad-output/
 .claude/
+.omc/
 
 # Private documents
 docs/private/

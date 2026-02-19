@@ -4,7 +4,8 @@
   "private": true,
   "description": "개청자 생성기 내부 스크립트",
   "scripts": {
-    "tile": "node tile.js"
+    "tile": "node tile.js",
+    "batch": "node batch.js"
   },
   "dependencies": {
     "sharp": "^0.33.2"
